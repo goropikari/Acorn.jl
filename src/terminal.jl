@@ -1,7 +1,7 @@
 import Base.==
 
 @enum(Key,
-    BACKSPACE = (@static is_windows() ? 8 : 127),
+    BACKSPACE = (@static Sys.iswindows() ? 8 : 127),
     ARROW_LEFT = 1000,
     ARROW_RIGHT,
     ARROW_UP,
@@ -20,6 +20,7 @@ import Base.==
     C_ARROW_LEFT,
     C_ARROW_RIGHT)
 
+Base.convert(::Type{UInt32}, x::Key) = UInt32(x)
 ==(c::UInt32, k::Key) = c == UInt32(k)
 ==(k::Key, c::UInt32) = c == UInt32(k)
 ==(c::Char, k::Key) = UInt32(c) == UInt32(k)
@@ -29,28 +30,28 @@ ctrl_key(c::Char)::UInt32 = UInt32(c) & 0x1f
 
 # For debugging
 function printNextKey()
-	term = Base.Terminals.TTYTerminal(get(ENV, "TERM", @static is_windows() ? "" : "dumb"), STDIN, STDOUT, STDERR)
-	Base.Terminals.raw!(term, true)
+	term = REPL.Terminals.TTYTerminal(get(ENV, "TERM", @static Sys.iswindows() ? "" : "dumb"), stdin, stdout, stderr)
+	REPL.Terminals.raw!(term, true)
 	c = readNextChar()
 	print("Code: $(UInt32(c)), Char: $(Char(c))")
-	Base.Terminals.raw!(term, true)
+	REPL.Terminals.raw!(term, true)
 	return nothing
 end
 
-readNextChar() = Char(read(STDIN,1)[1])
+readNextChar() = Char(read(stdin,1)[1])
 
 function readKey() ::UInt32
     c = readNextChar()
 
     # Escape characters
     if c == '\x1b'
-        STDIN.buffer.size < 3 && return '\x1b'
+        stdin.buffer.size < 3 && return '\x1b'
         esc_a = readNextChar()
         esc_b = readNextChar()
 
         if esc_a == '['
             if esc_b >= '0' && esc_b <= '9'
-                STDIN.buffer.size < 4 && return '\x1b'
+                stdin.buffer.size < 4 && return '\x1b'
                 esc_c = readNextChar()
 
                 if esc_c == '~'
@@ -72,7 +73,7 @@ function readKey() ::UInt32
                         return '\x1b'
                     end
                 elseif esc_c == ';'
-                    STDIN.buffer.size < 6 && return '\x1b'
+                    stdin.buffer.size < 6 && return '\x1b'
                     esc_d = readNextChar()
                     esc_e = readNextChar()
 

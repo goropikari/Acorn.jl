@@ -4,7 +4,7 @@ function commandBind(ed::Editor, args::String)
     if length(arg_arr) != 2
         setStatusMessage(ed, "bind: command requires two arguments")
         return
-    elseif !( length(arg_arr[1]) == 1 && isalpha(arg_arr[1][1]) )
+    elseif !( length(arg_arr[1]) == 1 && isletter(arg_arr[1][1]) )
         setStatusMessage(ed, "bind: first arg must be a letter")
         return
     end

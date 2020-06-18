@@ -1,5 +1,5 @@
 using Acorn
-using Base.Test
+using Test
 
 # Tests for commands
 include("cmds/test_bind.jl")

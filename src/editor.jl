@@ -1,7 +1,7 @@
 # """ Clear the screen, print an error message, and kill the program """
 # function die(msg)
-#     write(STDOUT, "\x1b[2J")
-#     write(STDOUT, "\x1b[H")
+#     write(stdout, "\x1b[2J")
+#     write(stdout, "\x1b[H")
 #     error(msg)
 # end
 
@@ -56,7 +56,7 @@ mutable struct Editor
     rows::Rows
 
     "terminal hosting this editor"
-    term::Base.Terminals.TTYTerminal
+    term::REPL.Terminals.TTYTerminal
 
     "used by commands to store variables"
     params::Dict{Symbol, Dict{Symbol, Any}}
@@ -76,7 +76,7 @@ function Editor()
 
     csr = Cursor(1,1,1)
     rows = Rows()
-    term = Base.Terminals.TTYTerminal(get(ENV, "TERM", @static is_windows() ? "" : "dumb"), STDIN, STDOUT, STDERR)
+    term = REPL.Terminals.TTYTerminal(get(ENV, "TERM", @static Sys.iswindows() ? "" : "dumb"), stdin, stdout, stderr)
     
     params = Dict{Symbol, Dict{Symbol, Any}}()
 
@@ -120,7 +120,7 @@ function editorOpen(ed::Editor, filename::String)
             ed.csr.y = 1
             ed.dirty = false
         end
-    catch Exception e
+    catch e
         setStatusMessage(ed, "Cannot open file $filename")
     end
 end
@@ -324,9 +324,9 @@ end
 function refreshScreen(ed::Editor)
 
     # Update terminal size
-    ed.height = Base.Terminals.height(ed.term) - 2 # status + msg bar = 2
-	@static is_windows() ? (ed.height -= 1) : ed.height
-    ed.width = Base.Terminals.width(ed.term)
+    ed.height = REPL.Terminals.height(ed.term) - 2 # status + msg bar = 2
+	@static Sys.iswindows() ? (ed.height -= 1) : ed.height
+    ed.width = REPL.Terminals.width(ed.term)
 
     scroll(ed)
 
@@ -344,7 +344,7 @@ function refreshScreen(ed::Editor)
 
     write(buf, "\x1b[?25h") # ?25h: Show cursor
 
-    write(STDOUT, String(take!(buf)))
+    write(stdout, String(take!(buf)))
 end
 
 function editorPrompt(ed::Editor, prompt::String;
@@ -358,7 +358,7 @@ function editorPrompt(ed::Editor, prompt::String;
 
         if showcursor
             # Position the cursor at the end of the line
-            @printf(STDOUT, "\x1b[%d;%dH", 999, length(statusmsg)+1)
+            @printf(stdout, "\x1b[%d;%dH", 999, length(statusmsg)+1)
         end
 
         c = Char(readKey())
@@ -508,8 +508,8 @@ function editorQuit(ed::Editor; force::Bool=false)
         setStatusMessage(ed,
             "File has unsaved changes. Save changes or use <ctrl-p>'quit !' to quit anyway.")
     else
-        write(STDOUT, "\x1b[2J")
-        write(STDOUT, "\x1b[H")
+        write(stdout, "\x1b[2J")
+        write(stdout, "\x1b[H")
         ed.quit = true
         !isinteractive() && exit(0)
     end

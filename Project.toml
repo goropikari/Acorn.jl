@@ -1,0 +1,13 @@
+name = "Acorn"
+uuid = "8e6d20f5-123e-4d86-8dc3-675adf3252da"
+version = "0.1.0"
+
+[deps]
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
